@@ -86,7 +86,7 @@ public class IfThenPayResourceService {
             return ResponseError.createFromServerError("INVALID_APPOINTMENT")
                     .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
 
-        //request reference
+
         String orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 24);
 
         var paymentRequest = MultibancoPaymentRequest.builder()
@@ -96,10 +96,12 @@ public class IfThenPayResourceService {
                 .orderId(orderId)
                 .build();
 
+        //request reference from ifthenpay server
         var paymentRequestResponse = this.multibancoClient.requestMultibancoReference(paymentRequest);
 
         if (paymentRequestResponse != null && paymentRequestResponse.getReference().length() == 9) {
 
+            // create order
             var payment = Payment.builder()
                     .paymentMethod(Payment.PaymentMethod.MULTIBANCO)
                     .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
@@ -110,6 +112,7 @@ public class IfThenPayResourceService {
                     .build();
             this.paymentService.savePayment(payment);
 
+            //send response with reference
             var response = MultibancoResponse.builder()
                     .reference(paymentRequestResponse.getReference())
                     .amount(paymentRequestResponse.getAmount())
