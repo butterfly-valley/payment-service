@@ -1,0 +1,72 @@
+quarkus:
+  rest-client:
+    multibanco-client:
+      uri: https://ifthenpay.com/api/multibanco/reference/init
+    mbway-client:
+      uri: https://mbway.ifthenpay.com/ifthenpaymbw.asmx
+  resteasy-reactive:
+    path: /api/v1
+  datasource:
+    db-kind: mysql
+    username: baa
+    password: Dafundo1/
+    jdbc:
+      url: jdbc:mysql://localhost:3306/appointment?autoReconnect=true&useUnicode=true
+  http:
+    port: 8091
+
+"%dev":
+  app:
+    multibanco-key: CHD-841325
+    mbway-key: QYZ-455570
+  quarkus:
+    http:
+      cors: true
+    log:
+      category:
+        "org.apache.http":
+          level: ALL
+        "io.quarkus.oidc":
+          level: DEBUG
+    datasource:
+      db-kind: mysql
+      username: baa
+      password: Dafundo1/
+      jdbc:
+        url: jdbc:mysql://localhost:3306/appointment?autoReconnect=true&useUnicode=yes&characterEncoding=UTF-8
+    rest-client:
+     multibanco-client:
+       uri: https://ifthenpay.com/api/multibanco/reference/sandbox
+     keycloak-client:
+       uri: http://localhost:9090/realms/BAA/protocol/openid-connect/token
+    oidc:
+      auth-server-url: http://localhost:9090/realms/BAA
+      tls:
+        verification: none
+"%test":
+  app:
+    multibanco-key: CHD-841325
+    mbway-key: QYZ-455570
+  quarkus:
+    log:
+      category:
+        "io.quarkus.oidc":
+          level: DEBUG
+        "org.apache.http":
+          level: DEBUG
+        "org.jboss.resteasy.reactive.client.logging":
+          level: DEBUG
+    rest-client:
+      multibanco-client:
+        uri: https://ifthenpay.com/api/multibanco/reference/sandbox
+      keycloak-client:
+        uri: http://localhost:9090/realms/BAA/protocol/openid-connect/token
+    datasource:
+      db-kind: h2
+      username: sa
+      password: sa
+      jdbc:
+        url: jdbc:h2:mem:appointment;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1
+    hibernate-orm:
+      database:
+        generation: drop-and-create
