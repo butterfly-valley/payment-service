@@ -87,6 +87,7 @@ public class IfThenPayResourceService {
                     .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
 
 
+        // Order id needs be 25 char max as per ifthenpay specification
         String orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 24);
 
         var paymentRequest = MultibancoPaymentRequest.builder()
