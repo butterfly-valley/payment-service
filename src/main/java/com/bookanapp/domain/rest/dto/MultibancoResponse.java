@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class MultibancoResponse {
-    private String entity;
+    private int entity;
     private String reference;
     private float amount;
-    private int expiryDays;
+    private String expiryDate;
 }

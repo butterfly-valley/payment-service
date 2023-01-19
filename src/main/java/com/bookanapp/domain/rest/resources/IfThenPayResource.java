@@ -3,6 +3,7 @@ package com.bookanapp.domain.rest.resources;
 import com.bookanapp.domain.rest.dto.MultibancoRequest;
 import com.bookanapp.domain.rest.service.AuthService;
 import com.bookanapp.domain.rest.service.IfThenPayResourceService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.security.RolesAllowed;
@@ -33,7 +34,7 @@ public class IfThenPayResource {
 
     @POST
     @Path("/multibanco/request")
-    public Response requestMultibancoReference(MultibancoRequest request){
+    public Response requestMultibancoReference(MultibancoRequest request) throws JsonProcessingException {
         var providerId = this.authService.returnProviderIdFromClaims(context);
         return this.ifThenPayResourceService.requestMultibancoReference(providerId, request);
     }

@@ -48,6 +48,10 @@ quarkus:
     multibanco-key: CHD-841325
     mbway-key: QYZ-455570
   quarkus:
+    oidc:
+      auth-server-url: http://localhost:9090/realms/BAA
+      tls:
+        verification: none
     log:
       category:
         "io.quarkus.oidc":

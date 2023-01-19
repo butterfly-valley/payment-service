@@ -3,9 +3,8 @@ package com.bookanapp.domain.rest.service;
 import com.bookanapp.domain.model.Payment;
 import com.bookanapp.domain.model.ScheduleServices;
 import com.bookanapp.domain.rest.client.MultibancoClient;
-import com.bookanapp.domain.rest.dto.MultibancoPaymentRequest;
-import com.bookanapp.domain.rest.dto.MultibancoRequest;
-import com.bookanapp.domain.rest.dto.ResponseError;
+import com.bookanapp.domain.rest.dto.*;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -99,18 +98,26 @@ public class IfThenPayResourceService {
 
         var paymentRequestResponse = this.multibancoClient.requestMultibancoReference(paymentRequest);
 
-        if (paymentRequestResponse.getReference().length()>0) {
+        if (paymentRequestResponse != null && paymentRequestResponse.getReference().length() == 9) {
 
             var payment = Payment.builder()
                     .paymentMethod(Payment.PaymentMethod.MULTIBANCO)
                     .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
                     .amount(amountToPay)
                     .created(Instant.now())
-                    .multibancoReference(paymentRequestResponse.getReference())
+                    .multibancoReference("paymentRequestResponse.getReference()")
+                    .paymentStatus(Payment.PaymentStatus.PENDING)
                     .build();
             this.paymentService.savePayment(payment);
 
-            return Response.status(Response.Status.CREATED).entity(paymentRequestResponse).build();
+            var response = MultibancoResponse.builder()
+                    .reference(paymentRequestResponse.getReference())
+                    .amount(paymentRequestResponse.getAmount())
+                    .entity(paymentRequestResponse.getEntity())
+                    .expiryDate(paymentRequestResponse.getExpiryDate())
+                    .build();
+
+            return Response.status(Response.Status.CREATED).entity(response).build();
 
 
         } else {

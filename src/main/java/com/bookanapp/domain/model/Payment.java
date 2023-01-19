@@ -32,9 +32,6 @@ public class Payment {
     private long appointment_id;
 
     private Instant created;
-    private Instant paid;
-
-    private Instant failed;
     @Column(name = "mbway_reference")
     private String multibancoReference;
 
@@ -46,6 +43,9 @@ public class Payment {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
+    @Column(name = "payment_status")
+    private PaymentStatus paymentStatus;
+
     public enum PaymentProvider{
         IFTHENPAY,
         STRIPE;
@@ -55,6 +55,12 @@ public class Payment {
         CREDIT_CARD,
         MULTIBANCO,
         MBWAY
+    }
+
+    public enum PaymentStatus{
+        PENDING,
+        PAID,
+        FAILED
     }
 
 }

@@ -1,9 +1,8 @@
 package com.bookanapp.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -22,16 +21,16 @@ public class Schedule {
     private String name;
     @Column(name = "availabilityCategory")
     private String scheduleCategory;
-    @JsonbTransient
+    @JsonIgnore
     private boolean visible;
     @Transient
-    @JsonbTransient
+   @JsonIgnore
     private String viewPaidUntil;
-    @JsonbTransient
+   @JsonIgnore
     private boolean main;
 
     @Column(name = "ProviderId")
-    @JsonbTransient
+   @JsonIgnore
     private long providerId;
 
 
@@ -43,18 +42,18 @@ public class Schedule {
     private Set<ScheduleServices> scheduleServices = new HashSet();
 ////    private int version;
     private Boolean mandatoryPhone = false;
-    @JsonbTransient
+   @JsonIgnore
     private boolean live = false;
-    @JsonbTransient
+   @JsonIgnore
     private boolean sendSms = true;
-    @JsonbTransient
+   @JsonIgnore
     private boolean service = false;
     private int minimumNotice;
     private String avatar;
-    @JsonbTransient
+   @JsonIgnore
     @Column(name = "start_date")
     private LocalDate scheduleStart;
-    @JsonbTransient
+   @JsonIgnore
     @Column(name = "end_date")
     private LocalDate scheduleEnd;
     private String restriction;
@@ -66,7 +65,7 @@ public class Schedule {
     private String serviceSchedule;
 
     @Column(name = "accessible_on_widget")
-    @JsonbTransient
+   @JsonIgnore
     private boolean accessibleOnWidget;
 
 }
