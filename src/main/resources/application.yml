@@ -61,6 +61,8 @@ quarkus:
         "org.jboss.resteasy.reactive.client.logging":
           level: DEBUG
     rest-client:
+      logging:
+        scope: request-response
       multibanco-client:
         uri: https://ifthenpay.com/api/multibanco/reference/sandbox
       keycloak-client:
