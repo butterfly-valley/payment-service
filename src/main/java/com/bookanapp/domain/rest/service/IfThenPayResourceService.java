@@ -106,7 +106,7 @@ public class IfThenPayResourceService {
                     .expiryDate(paymentRequestResponse.getExpiryDate())
                     .build();
 
-            return Response.status(Response.Status.CREATED).entity(response).build();
+            return Response.status(Response.Status.CREATED).entity(payment).build();
 
 
         } else {
@@ -169,7 +169,7 @@ public class IfThenPayResourceService {
 
                     this.paymentService.savePayment(payment);
 
-                    return Response.status(Response.Status.CREATED).entity(response).build();
+                    return Response.status(Response.Status.CREATED).entity(payment).build();
                 } else {
                     return ResponseError.createFromServerError(MbWayPaymentResponse.createFromCode(paymentRequestResponse.getStatus())
                             .getPaymentCodeMessage()).returnResponseWithStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
