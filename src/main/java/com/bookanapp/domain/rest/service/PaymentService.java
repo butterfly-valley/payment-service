@@ -15,4 +15,8 @@ public class PaymentService {
     public void savePayment(Payment payment) {
         this.paymentRepository.save(payment);
     }
+
+    public Payment findByAppointment(long appointmentId) {
+        return this.paymentRepository.findByAppointmentId(appointmentId);
+    }
 }

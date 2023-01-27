@@ -29,7 +29,7 @@ public class Payment {
     private long providerId;
 
     @Column(name = "appointment_id")
-    private long appointment_id;
+    private long appointmentId;
 
     private Instant created;
     @Column(name = "mbway_reference")
