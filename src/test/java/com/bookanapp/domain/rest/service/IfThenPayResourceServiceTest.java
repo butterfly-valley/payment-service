@@ -3,8 +3,6 @@ package com.bookanapp.domain.rest.service;
 import com.bookanapp.domain.model.*;
 import com.bookanapp.domain.repository.ScheduleInvoicingRepository;
 import com.bookanapp.domain.rest.dto.AppointmentPaymentRequest;
-import com.bookanapp.domain.rest.dto.MbWayPaymentResponse;
-import com.bookanapp.domain.rest.dto.MultibancoResponse;
 import com.bookanapp.domain.rest.dto.ResponseError;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,37 +101,37 @@ class IfThenPayResourceServiceTest {
     @Test
     @DisplayName("Should return valid reference when requesting multibanco for appointment on flexible schedule")
     void requestMultibancoReference() {
-        var request = new AppointmentPaymentRequest(appointment.getId(), 0);
+        var request = new AppointmentPaymentRequest(appointment, 0);
         var response = this.ifThenPayResourceService.requestMultibancoReference(31, request);
         assertNotNull(response);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         assertNotNull(response.getEntity());
-        assertTrue(response.getEntity() instanceof MultibancoResponse);
-        var body = (MultibancoResponse) response.getEntity();
+        assertTrue(response.getEntity() instanceof Payment);
+        var body = (Payment) response.getEntity();
         assertNotNull(body);
-        assertEquals(9, body.getReference().length());
+        assertEquals(9, body.getMultibancoReference().length());
         assertEquals(90.0F, body.getAmount());
     }
 
     @Test
     @DisplayName("Should return valid reference when requesting multibanco for appointment on fixed schedule")
     void requestMultibancoReferenceForFixedAppoitnment() {
-        var request = new AppointmentPaymentRequest(fixedAppointment.getId(), 0);
+        var request = new AppointmentPaymentRequest(fixedAppointment, 0);
         var response = this.ifThenPayResourceService.requestMultibancoReference(31, request);
         assertNotNull(response);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         assertNotNull(response.getEntity());
-        assertTrue(response.getEntity() instanceof MultibancoResponse);
-        var body = (MultibancoResponse) response.getEntity();
+        assertTrue(response.getEntity() instanceof Payment);
+        var body = (Payment) response.getEntity();
         assertNotNull(body);
-        assertEquals(9, body.getReference().length());
+        assertEquals(9, body.getMultibancoReference().length());
         assertEquals(60.0F, body.getAmount());
     }
 
     @Test
     @DisplayName("Should return 422 when requesting multibanco reference with invalid appointment")
     void requestMultibancoReferenceInvalidAppointment() {
-        var request = new AppointmentPaymentRequest(999, 0);
+        var request = new AppointmentPaymentRequest(new Appointment(), 0);
         var response = this.ifThenPayResourceService.requestMultibancoReference(31, request);
         assertNotNull(response);
         assertEquals(ResponseError.UNPROCESSABLE_ENTITY_STATUS, response.getStatus());
@@ -142,7 +140,7 @@ class IfThenPayResourceServiceTest {
     @Test
     @DisplayName("Should return 422 when requesting multibanco with invalid provider")
     void requestMultibancoReferenceInvalidProvider() {
-        var request = new AppointmentPaymentRequest(appointment.getId(), 0);
+        var request = new AppointmentPaymentRequest(appointment, 0);
         var response = this.ifThenPayResourceService.requestMultibancoReference(999, request);
         assertNotNull(response);
         assertEquals(ResponseError.UNPROCESSABLE_ENTITY_STATUS, response.getStatus());
@@ -151,22 +149,22 @@ class IfThenPayResourceServiceTest {
     @Test
     @DisplayName("Should return valid response when requesting mbway payment")
     void requestMbWayPayment() {
-        var request = new AppointmentPaymentRequest(fixedAppointment.getId(), 0);
+        var request = new AppointmentPaymentRequest(fixedAppointment, 0);
         request.setPhoneNumber("+351914749827");
         var response = this.ifThenPayResourceService.requestMbWayPayment(31, request);
         assertNotNull(response);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
         assertNotNull(response.getEntity());
-        assertTrue(response.getEntity() instanceof MbWayPaymentResponse);
-        var body = (MbWayPaymentResponse) response.getEntity();
+        assertTrue(response.getEntity() instanceof Payment);
+        var body = (Payment) response.getEntity();
         assertNotNull(body);
-        assertTrue(body.getPaymentCodeMessage().length()>10);
+        assertTrue(body.getAppointmentId() == fixedAppointment.getId());
     }
 
     @Test
     @DisplayName("Should return 90 when requesting payment for appointment with services")
     void validatePaymentRequest() {
-        var request = new AppointmentPaymentRequest(appointment.getId(), 0);
+        var request = new AppointmentPaymentRequest(appointment, 0);
         float amount = (Float) this.ifThenPayResourceService.validatePaymentRequest(31, request, false);
         assertEquals(90F, amount);
     }
@@ -174,7 +172,7 @@ class IfThenPayResourceServiceTest {
     @Test
     @DisplayName("Should return 60 when requesting payment for fixed appointment")
     void validatePaymentRequestFixedAppointment() {
-        var request = new AppointmentPaymentRequest(fixedAppointment.getId(), 0);
+        var request = new AppointmentPaymentRequest(fixedAppointment, 0);
         float amount = (Float) this.ifThenPayResourceService.validatePaymentRequest(31, request, false);
         assertEquals(60F, amount);
     }
@@ -182,7 +180,7 @@ class IfThenPayResourceServiceTest {
     @Test
     @DisplayName("Should return 422 when validating payment request with invalid appointment")
     void validatePaymentRequestInvalidAppointment() {
-        var request = new AppointmentPaymentRequest(999, 0);
+        var request = new AppointmentPaymentRequest(new Appointment(), 0);
         var response = (Response) this.ifThenPayResourceService.validatePaymentRequest(31, request, false);
         assertNotNull(response);
         assertEquals(ResponseError.UNPROCESSABLE_ENTITY_STATUS, response.getStatus());
@@ -191,7 +189,7 @@ class IfThenPayResourceServiceTest {
     @Test
     @DisplayName("Should return 422 when validating payment request with invalid provider")
     void validatePaymentRequestInvalidProvider() {
-        var request = new AppointmentPaymentRequest(appointment.getId(), 0);
+        var request = new AppointmentPaymentRequest(appointment, 0);
         var response = (Response)this.ifThenPayResourceService.validatePaymentRequest(999, request, false);
         assertNotNull(response);
         assertEquals(ResponseError.UNPROCESSABLE_ENTITY_STATUS, response.getStatus());
@@ -200,7 +198,7 @@ class IfThenPayResourceServiceTest {
     @Test
     @DisplayName("Should return 422 when validating payment request with invalid phone")
     void validatePaymentRequestInvalidPhone() {
-        var request = new AppointmentPaymentRequest(appointment.getId(), 0);
+        var request = new AppointmentPaymentRequest(appointment, 0);
         var response = (Response)this.ifThenPayResourceService.validatePaymentRequest(31L, request, true);
         assertNotNull(response);
         assertEquals(ResponseError.UNPROCESSABLE_ENTITY_STATUS, response.getStatus());

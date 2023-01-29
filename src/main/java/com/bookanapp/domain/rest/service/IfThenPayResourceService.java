@@ -52,17 +52,18 @@ public class IfThenPayResourceService {
 
     public Response requestMultibancoReference(long providerId, AppointmentPaymentRequest request){
 
-        Payment payment = this.paymentService.findByAppointment(request.getAppointmentId());
-
-        if (payment != null)
-            return ResponseError.createFromServerError("PAYMENT_ALREADY_REQUESTED")
-                    .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
-
         //validate request
         Object validatedAmountToPayOrErrorResponse = this.validatePaymentRequest(providerId, request, false);
 
         if (validatedAmountToPayOrErrorResponse instanceof Response)
             return (Response) validatedAmountToPayOrErrorResponse;
+
+        Payment payment = this.paymentService.findByAppointment(request.getAppointment().getId());
+
+        if (payment != null)
+            return ResponseError.createFromServerError("PAYMENT_ALREADY_REQUESTED")
+                    .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+
 
         float amountToPay = (Float) validatedAmountToPayOrErrorResponse;
 
@@ -90,9 +91,10 @@ public class IfThenPayResourceService {
                     .amount(amountToPay)
                     .created(Instant.now())
                     .multibancoReference(paymentRequestResponse.getReference())
+                    .multibancoEntity(paymentRequestResponse.getEntity())
                     .paymentStatus(Payment.PaymentStatus.PENDING)
                     .orderId(orderId)
-                    .appointmentId(request.getAppointmentId())
+                    .appointmentId(request.getAppointment().getId())
                     .providerId(providerId)
                     .build();
 
@@ -119,7 +121,7 @@ public class IfThenPayResourceService {
 
     public Response requestMbWayPayment(long providerId, AppointmentPaymentRequest request){
 
-        Payment payment = this.paymentService.findByAppointment(request.getAppointmentId());
+        Payment payment = this.paymentService.findByAppointment(request.getAppointment().getId());
 
         if (payment != null)
             return ResponseError.createFromServerError("PAYMENT_ALREADY_REQUESTED")
@@ -163,7 +165,7 @@ public class IfThenPayResourceService {
                             .mbwayPhone(request.getPhoneNumber())
                             .paymentStatus(Payment.PaymentStatus.PENDING)
                             .orderId(orderId)
-                            .appointmentId(request.getAppointmentId())
+                            .appointmentId(request.getAppointment().getId())
                             .providerId(providerId)
                             .build();
 
@@ -198,9 +200,9 @@ public class IfThenPayResourceService {
             return ResponseError.createFromValidationErrors(validationErrors, "VALIDATION_ERROR")
                     .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
 
-        var appointment = this.appointmentService.getAppointment(providerId, request.getAppointmentId(), request.getOffset());
+        var appointment = request.getAppointment();
 
-        if (appointment == null)
+        if (appointment == null ||  appointment.getProviderId() != providerId || appointment.getId() == null)
             return ResponseError.createFromServerError("INVALID_APPOINTMENT")
                     .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
 

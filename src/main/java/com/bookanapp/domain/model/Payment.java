@@ -32,8 +32,13 @@ public class Payment {
     private long appointmentId;
 
     private Instant created;
-    @Column(name = "mbway_reference")
+
+    private Instant updated;
+    @Column(name = "multibanco_reference")
     private String multibancoReference;
+
+    @Column(name = "multibanco_entity")
+    private Integer multibancoEntity;
 
     @Column(name = "mbway_phone")
     private String mbwayPhone;
