@@ -3,7 +3,6 @@ package com.bookanapp.domain.rest.resources;
 import com.bookanapp.domain.rest.dto.AppointmentPaymentRequest;
 import com.bookanapp.domain.rest.service.AuthService;
 import com.bookanapp.domain.rest.service.IfThenPayResourceService;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -15,11 +14,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-@Path("/ifthenpay")
+@Path("/itp")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed("ROLE_API_CLIENT")
-@Slf4j
 public class IfThenPayResource {
 
     @Inject

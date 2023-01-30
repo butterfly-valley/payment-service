@@ -38,7 +38,7 @@ public class Payment {
     private String multibancoReference;
 
     @Column(name = "multibanco_entity")
-    private Integer multibancoEntity;
+    private String multibancoEntity;
 
     @Column(name = "mbway_phone")
     private String mbwayPhone;

@@ -19,4 +19,8 @@ public class PaymentService {
     public Payment findByAppointment(long appointmentId) {
         return this.paymentRepository.findByAppointmentId(appointmentId);
     }
+
+    public Payment findByOrderId(String orderId) {
+        return this.paymentRepository.findByOrderId(orderId);
+    }
 }

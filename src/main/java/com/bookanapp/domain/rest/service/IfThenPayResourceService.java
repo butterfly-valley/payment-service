@@ -100,14 +100,6 @@ public class IfThenPayResourceService {
 
             this.paymentService.savePayment(payment);
 
-            //send response with reference
-            var response = MultibancoResponse.builder()
-                    .reference(paymentRequestResponse.getReference())
-                    .amount(paymentRequestResponse.getAmount())
-                    .entity(paymentRequestResponse.getEntity())
-                    .expiryDate(paymentRequestResponse.getExpiryDate())
-                    .build();
-
             return Response.status(Response.Status.CREATED).entity(payment).build();
 
 

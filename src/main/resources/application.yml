@@ -1,3 +1,5 @@
+app:
+  anti-fishing-key: 18d056b18dd94416a6297d9abe42c09e
 quarkus:
   rest-client:
     multibanco-client:

@@ -2,7 +2,9 @@ package com.bookanapp.domain.rest.service;
 
 import com.bookanapp.domain.model.Appointment;
 import com.bookanapp.domain.model.Payment;
+import com.bookanapp.domain.repository.PaymentRepository;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,8 @@ class PaymentServiceTest {
     @Inject
     PaymentService paymentService;
 
+    @Inject
+    PaymentRepository paymentRepository;
 
 
     Appointment appointment;
@@ -56,6 +60,11 @@ class PaymentServiceTest {
 
     }
 
+    @AfterEach
+    void tearDown() {
+        this.paymentRepository.delete(payment);
+    }
+
     @Test
     @DisplayName("Should return payment when it exists in database and when querying by appointment id")
     void findByAppointment() {
@@ -70,4 +79,20 @@ class PaymentServiceTest {
         var savedPayment = this.paymentService.findByAppointment(999);
         assertNull(savedPayment);
     }
+
+    @Test
+    @DisplayName("Should find payment by orderId")
+    void findByOrderId() {
+        var savedPayment = this.paymentService.findByOrderId("orderId");
+        assertEquals(savedPayment.getAppointmentId(), appointment.getId());
+        assertEquals(300, payment.getAmount());
+    }
+
+    @Test
+    @DisplayName("Should return null when payment does not exist and when querying by order id")
+    void findNullByOrderId() {
+        var savedPayment = this.paymentService.findByOrderId("999");
+        assertNull(savedPayment);
+    }
+
 }

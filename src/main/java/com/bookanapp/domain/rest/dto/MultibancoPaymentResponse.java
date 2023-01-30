@@ -11,7 +11,7 @@ public class MultibancoPaymentResponse {
     @JsonProperty("Amount")
     private float amount;
     @JsonProperty("Entity")
-    private int entity;
+    private String entity;
     @JsonProperty("Message")
     private String message;
     @JsonProperty("OrderId")
