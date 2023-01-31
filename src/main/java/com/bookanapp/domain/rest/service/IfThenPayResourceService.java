@@ -3,6 +3,7 @@ package com.bookanapp.domain.rest.service;
 import com.bookanapp.config.FullStackConverter;
 import com.bookanapp.domain.model.Payment;
 import com.bookanapp.domain.model.ScheduleServices;
+import com.bookanapp.domain.rest.client.ITPCreditCardClient;
 import com.bookanapp.domain.rest.client.MbWayClient;
 import com.bookanapp.domain.rest.client.MultibancoClient;
 import com.bookanapp.domain.rest.dto.*;
@@ -14,6 +15,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.validation.Validator;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.UUID;
@@ -31,9 +33,9 @@ public class IfThenPayResourceService {
     @RestClient
     MbWayClient mbWayClient;
 
-
     @Inject
-    AppointmentService appointmentService;
+    @RestClient
+    ITPCreditCardClient itpCreditCardClient;
 
     @Inject
     ScheduleService scheduleService;
@@ -144,9 +146,7 @@ public class IfThenPayResourceService {
             var paymentRequestResponse = this.mbWayClient.requestMbWayPayment(paymentRequest);
 
             if (paymentRequestResponse != null) {
-                MbWayPaymentResponse response = MbWayPaymentResponse.createFromCode(paymentRequestResponse.getStatus());
                 if (paymentRequestResponse.getStatus().equals("000")) {
-
 
                     // create order when does not exist
                     payment = Payment.builder()
@@ -178,6 +178,79 @@ public class IfThenPayResourceService {
         }
 
 
+
+    }
+
+    public Response requestCreditCardPayment(long providerId, AppointmentPaymentRequest request) {
+        Payment payment = this.paymentService.findByAppointment(request.getAppointment().getId());
+
+        if (payment != null)
+            return ResponseError.createFromServerError("PAYMENT_ALREADY_REQUESTED")
+                    .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+
+        //validate request
+        Object validatedAmountToPayOrErrorResponse = this.validatePaymentRequest(providerId, request, false);
+
+        if (validatedAmountToPayOrErrorResponse instanceof Response)
+            return (Response) validatedAmountToPayOrErrorResponse;
+
+        float amountToPay = (Float) validatedAmountToPayOrErrorResponse;
+
+        // Order id needs be 15 char max as per ifthenpay specification
+        String orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+
+        var paymentRequest = CCPaymentRequest.builder()
+                .orderId(orderId)
+                .amount(Float.toString(amountToPay))
+                .successUrl(request.getSuccessUrl())
+                .errorUrl(request.getErrorUrl())
+                .cancelUrl(request.getCancelUrl())
+                .language(request.getLanguage() != null ? request.getLanguage() : "en")
+                .build();
+        try {
+            var response = this.itpCreditCardClient.requestCreditCardPaymentURL(paymentRequest);
+            if (response != null && response.getPaymentUrl() != null && response.getPaymentUrl().length()>0) {
+                // create order when does not exist
+                payment = Payment.builder()
+                        .paymentMethod(Payment.PaymentMethod.CREDIT_CARD)
+                        .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
+                        .amount(amountToPay)
+                        .created(Instant.now())
+                        .updated(Instant.now())
+                        .ccRequestId(response.getRequestId())
+                        .paymentStatus(Payment.PaymentStatus.PENDING)
+                        .orderId(orderId)
+                        .appointmentId(request.getAppointment().getId())
+                        .providerId(providerId)
+                        .build();
+
+                this.paymentService.savePayment(payment);
+                payment.setPaymentUrl(response.getPaymentUrl());
+                return Response.status(Response.Status.CREATED).entity(payment).build();
+
+            } else {
+                return ResponseError.createFromServerError("ERROR")
+                        .returnResponseWithStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+            }
+        } catch (Exception e) {
+            log.error("Error requesting cc payment for appointment: " + request.getAppointment().getId() + ", error: " +
+                    FullStackConverter.fullStack(e));
+            return ResponseError.createFromServerError("ERROR")
+                    .returnResponseWithStatusCode(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        }
+    }
+
+    public Response confirmCreditCardPayment(long providerId, String requestId, @QueryParam("status") Payment.PaymentStatus status) {
+        var payment = this.paymentService.findByRequestId(requestId, providerId);
+        if (payment == null)
+            return ResponseError.createFromServerError("INVALID_PAYMENT")
+                    .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+
+        payment.setPaymentStatus(status);
+        payment.setUpdated(Instant.now());
+        this.paymentService.savePayment(payment);
+
+        return Response.status(Response.Status.OK).build();
 
     }
 

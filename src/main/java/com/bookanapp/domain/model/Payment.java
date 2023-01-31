@@ -51,6 +51,12 @@ public class Payment {
     @Column(name = "payment_status")
     private PaymentStatus paymentStatus;
 
+    @Column(name = "cc_request_id")
+    private String ccRequestId;
+
+    @Transient
+    private String paymentUrl;
+
     public enum PaymentProvider{
         IFTHENPAY,
         STRIPE;

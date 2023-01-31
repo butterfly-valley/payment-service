@@ -2,25 +2,22 @@ package com.bookanapp.domain.rest.dto;
 
 import com.bookanapp.domain.model.Appointment;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.validation.constraints.Positive;
+import org.jboss.resteasy.reactive.RestForm;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class AppointmentPaymentRequest {
+@NoArgsConstructor
+@Builder
+public class CCPaymentRequest {
 
-    public AppointmentPaymentRequest(Appointment appointment) {
-        this.appointment = appointment;
-    }
-
-    private Appointment appointment;
-
-    private String phoneNumber;
+    private String orderId;
+    private String amount;
     private String successUrl;
     private String errorUrl;
     private String cancelUrl;
     private String language;
+
 }

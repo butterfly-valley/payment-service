@@ -39,6 +39,8 @@ quarkus:
     rest-client:
      multibanco-client:
        uri: https://ifthenpay.com/api/multibanco/reference/sandbox
+     itp-credit-card-client:
+       uri: https://ifthenpay.com/api/creditcard/init/AAA-000000
      keycloak-client:
        uri: http://localhost:9090/realms/BAA/protocol/openid-connect/token
     oidc:
@@ -67,6 +69,8 @@ quarkus:
         scope: request-response
       multibanco-client:
         uri: https://ifthenpay.com/api/multibanco/reference/sandbox
+      itp-credit-card-client:
+        uri: https://ifthenpay.com/api/creditcard/init/AAA-000000
       keycloak-client:
         uri: http://localhost:9090/realms/BAA/protocol/openid-connect/token
     datasource:

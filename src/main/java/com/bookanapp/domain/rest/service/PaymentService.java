@@ -23,4 +23,8 @@ public class PaymentService {
     public Payment findByOrderId(String orderId) {
         return this.paymentRepository.findByOrderId(orderId);
     }
+
+    public Payment findByRequestId(String requestId, long providerId) {
+        return this.paymentRepository.findByCcRequestIdAndProviderId(requestId, providerId);
+    }
 }

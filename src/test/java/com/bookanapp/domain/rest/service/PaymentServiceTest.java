@@ -52,6 +52,7 @@ class PaymentServiceTest {
                 .multibancoReference("ref")
                 .paymentStatus(Payment.PaymentStatus.PENDING)
                 .orderId("orderId")
+                .ccRequestId("ccRequestId")
                 .appointmentId(appointment.getId())
                 .providerId(31)
                 .build();
@@ -95,4 +96,25 @@ class PaymentServiceTest {
         assertNull(savedPayment);
     }
 
+    @Test
+    @DisplayName("Should find payment by requestId and providerId")
+    void findByRequestId() {
+        var savedPayment = this.paymentService.findByRequestId("ccRequestId", 31);
+        assertEquals(savedPayment.getAppointmentId(), appointment.getId());
+        assertEquals(300, payment.getAmount());
+    }
+
+    @Test
+    @DisplayName("Should return null when payment does not exist and when querying by request id")
+    void findNullByRequestId() {
+        var savedPayment = this.paymentService.findByRequestId("999", 31);
+        assertNull(savedPayment);
+    }
+
+    @Test
+    @DisplayName("Should return null when payment does not exist and when querying by request id and provider")
+    void findNullByRequestIdInvalidProvider() {
+        var savedPayment = this.paymentService.findByRequestId("ccRequestId", 999);
+        assertNull(savedPayment);
+    }
 }
