@@ -53,6 +53,12 @@ public class IfThenPayResourceService {
     String MBWAY_KEY;
 
     public Response requestMultibancoReference(long providerId, AppointmentPaymentRequest request){
+        Payment payment = this.paymentService.findByAppointment(request.getAppointment().getId());
+
+        //filter out paid orders
+        if (payment != null && payment.getPaymentStatus().equals(Payment.PaymentStatus.PAID))
+            return ResponseError.createFromServerError("PAYMENT_ALREADY_REQUESTED")
+                    .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
 
         //validate request
         Object validatedAmountToPayOrErrorResponse = this.validatePaymentRequest(providerId, request, false);
@@ -60,11 +66,6 @@ public class IfThenPayResourceService {
         if (validatedAmountToPayOrErrorResponse instanceof Response)
             return (Response) validatedAmountToPayOrErrorResponse;
 
-        Payment payment = this.paymentService.findByAppointment(request.getAppointment().getId());
-
-        if (payment != null)
-            return ResponseError.createFromServerError("PAYMENT_ALREADY_REQUESTED")
-                    .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
 
 
         float amountToPay = (Float) validatedAmountToPayOrErrorResponse;
@@ -84,21 +85,33 @@ public class IfThenPayResourceService {
         var paymentRequestResponse = this.multibancoClient.requestMultibancoReference(paymentRequest);
 
         if (paymentRequestResponse != null && paymentRequestResponse.getReference().length() == 9) {
+            if (payment == null) {
 
-
-            // create order when does not exist
-            payment = Payment.builder()
-                    .paymentMethod(Payment.PaymentMethod.MULTIBANCO)
-                    .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
-                    .amount(amountToPay)
-                    .created(Instant.now())
-                    .multibancoReference(paymentRequestResponse.getReference())
-                    .multibancoEntity(paymentRequestResponse.getEntity())
-                    .paymentStatus(Payment.PaymentStatus.PENDING)
-                    .orderId(orderId)
-                    .appointmentId(request.getAppointment().getId())
-                    .providerId(providerId)
-                    .build();
+                // create order when does not exist
+                payment = Payment.builder()
+                        .paymentMethod(Payment.PaymentMethod.MULTIBANCO)
+                        .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
+                        .amount(amountToPay)
+                        .created(Instant.now())
+                        .multibancoReference(paymentRequestResponse.getReference())
+                        .multibancoEntity(paymentRequestResponse.getEntity())
+                        .paymentStatus(Payment.PaymentStatus.PENDING)
+                        .orderId(orderId)
+                        .appointmentId(request.getAppointment().getId())
+                        .providerId(providerId)
+                        .build();
+            } else {
+                payment.setUpdated(Instant.now());
+                payment.setAmount(amountToPay);
+                payment.setPaymentMethod(Payment.PaymentMethod.MULTIBANCO);
+                payment.setPaymentProvider(Payment.PaymentProvider.IFTHENPAY);
+                payment.setPaymentStatus(Payment.PaymentStatus.PENDING);
+                payment.setMultibancoReference(paymentRequestResponse.getReference());
+                payment.setMultibancoEntity(paymentRequestResponse.getEntity());
+                payment.setOrderId(orderId);
+                payment.setMbwayPhone(null);
+                payment.setCcRequestId(null);
+            }
 
             this.paymentService.savePayment(payment);
 
@@ -117,9 +130,11 @@ public class IfThenPayResourceService {
 
         Payment payment = this.paymentService.findByAppointment(request.getAppointment().getId());
 
-        if (payment != null)
+        //filter out paid orders
+        if (payment != null && payment.getPaymentStatus().equals(Payment.PaymentStatus.PAID))
             return ResponseError.createFromServerError("PAYMENT_ALREADY_REQUESTED")
                     .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
+
 
         //validate request
         Object validatedAmountToPayOrErrorResponse = this.validatePaymentRequest(providerId, request, true);
@@ -143,23 +158,40 @@ public class IfThenPayResourceService {
                 .build();
         try {
 
+
             var paymentRequestResponse = this.mbWayClient.requestMbWayPayment(paymentRequest);
 
             if (paymentRequestResponse != null) {
                 if (paymentRequestResponse.getStatus().equals("000")) {
 
-                    // create order when does not exist
-                    payment = Payment.builder()
-                            .paymentMethod(Payment.PaymentMethod.MBWAY)
-                            .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
-                            .amount(amountToPay)
-                            .created(Instant.now())
-                            .mbwayPhone(request.getPhoneNumber())
-                            .paymentStatus(Payment.PaymentStatus.PENDING)
-                            .orderId(orderId)
-                            .appointmentId(request.getAppointment().getId())
-                            .providerId(providerId)
-                            .build();
+
+                    if (payment == null) {
+
+                        // create order when does not exist
+                        payment = Payment.builder()
+                                .paymentMethod(Payment.PaymentMethod.MBWAY)
+                                .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
+                                .amount(amountToPay)
+                                .created(Instant.now())
+                                .updated(Instant.now())
+                                .mbwayPhone(request.getPhoneNumber())
+                                .paymentStatus(Payment.PaymentStatus.PENDING)
+                                .orderId(orderId)
+                                .appointmentId(request.getAppointment().getId())
+                                .providerId(providerId)
+                                .build();
+                    } else {
+                        payment.setUpdated(Instant.now());
+                        payment.setAmount(amountToPay);
+                        payment.setMbwayPhone(request.getPhoneNumber());
+                        payment.setPaymentMethod(Payment.PaymentMethod.MBWAY);
+                        payment.setPaymentProvider(Payment.PaymentProvider.IFTHENPAY);
+                        payment.setPaymentStatus(Payment.PaymentStatus.PENDING);
+                        payment.setOrderId(orderId);
+                        payment.setMultibancoEntity(null);
+                        payment.setMultibancoEntity(null);
+                        payment.setCcRequestId(null);
+                    }
 
                     this.paymentService.savePayment(payment);
 
@@ -182,9 +214,11 @@ public class IfThenPayResourceService {
     }
 
     public Response requestCreditCardPayment(long providerId, AppointmentPaymentRequest request) {
+
         Payment payment = this.paymentService.findByAppointment(request.getAppointment().getId());
 
-        if (payment != null)
+        //filter out paid orders
+        if (payment != null && payment.getPaymentStatus().equals(Payment.PaymentStatus.PAID))
             return ResponseError.createFromServerError("PAYMENT_ALREADY_REQUESTED")
                     .returnResponseWithStatusCode(ResponseError.UNPROCESSABLE_ENTITY_STATUS);
 
@@ -210,22 +244,37 @@ public class IfThenPayResourceService {
         try {
             var response = this.itpCreditCardClient.requestCreditCardPaymentURL(paymentRequest);
             if (response != null && response.getPaymentUrl() != null && response.getPaymentUrl().length()>0) {
-                // create order when does not exist
-                payment = Payment.builder()
-                        .paymentMethod(Payment.PaymentMethod.CREDIT_CARD)
-                        .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
-                        .amount(amountToPay)
-                        .created(Instant.now())
-                        .updated(Instant.now())
-                        .ccRequestId(response.getRequestId())
-                        .paymentStatus(Payment.PaymentStatus.PENDING)
-                        .orderId(orderId)
-                        .appointmentId(request.getAppointment().getId())
-                        .providerId(providerId)
-                        .build();
+
+                if (payment == null) {
+
+                    // create order when does not exist
+                    payment = Payment.builder()
+                            .paymentMethod(Payment.PaymentMethod.CREDIT_CARD)
+                            .paymentProvider(Payment.PaymentProvider.IFTHENPAY)
+                            .amount(amountToPay)
+                            .created(Instant.now())
+                            .updated(Instant.now())
+                            .ccRequestId(response.getRequestId())
+                            .paymentStatus(Payment.PaymentStatus.PENDING)
+                            .orderId(orderId)
+                            .appointmentId(request.getAppointment().getId())
+                            .providerId(providerId)
+                            .build();
+                } else {
+                    payment.setUpdated(Instant.now());
+                    payment.setAmount(amountToPay);
+                    payment.setPaymentMethod(Payment.PaymentMethod.CREDIT_CARD);
+                    payment.setPaymentProvider(Payment.PaymentProvider.IFTHENPAY);
+                    payment.setPaymentStatus(Payment.PaymentStatus.PENDING);
+                    payment.setOrderId(orderId);
+                    payment.setCcRequestId(response.getRequestId());
+                    payment.setPaymentUrl(response.getPaymentUrl());
+                    payment.setMbwayPhone(null);
+                    payment.setMultibancoEntity(null);
+                    payment.setMultibancoEntity(null);
+                }
 
                 this.paymentService.savePayment(payment);
-                payment.setPaymentUrl(response.getPaymentUrl());
                 return Response.status(Response.Status.CREATED).entity(payment).build();
 
             } else {
