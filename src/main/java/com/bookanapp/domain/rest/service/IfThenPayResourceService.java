@@ -275,6 +275,7 @@ public class IfThenPayResourceService {
                 }
 
                 this.paymentService.savePayment(payment);
+                payment.setPaymentUrl(response.getPaymentUrl());
                 return Response.status(Response.Status.CREATED).entity(payment).build();
 
             } else {

@@ -163,7 +163,9 @@ class IfThenPayResourceServiceTest {
     @Test
     @DisplayName("Should return 422 when requesting multibanco reference with invalid appointment")
     void requestMultibancoReferenceInvalidAppointment() {
-        var request = new AppointmentPaymentRequest(new Appointment());
+        var appointment = new Appointment();
+        appointment.setId(999L);
+        var request = new AppointmentPaymentRequest(appointment);
         var response = this.ifThenPayResourceService.requestMultibancoReference(31, request);
         assertNotNull(response);
         assertEquals(ResponseError.UNPROCESSABLE_ENTITY_STATUS, response.getStatus());

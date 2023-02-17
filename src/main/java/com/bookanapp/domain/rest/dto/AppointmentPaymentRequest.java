@@ -23,4 +23,6 @@ public class AppointmentPaymentRequest {
     private String errorUrl;
     private String cancelUrl;
     private String language;
+
+    private Long providerId;
 }

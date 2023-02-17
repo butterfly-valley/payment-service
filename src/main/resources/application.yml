@@ -1,11 +1,17 @@
 app:
+  multibanco-key: CHD-841325
+  mbway-key: QYZ-455570
   anti-fishing-key: 18d056b18dd94416a6297d9abe42c09e
 quarkus:
+  oidc:
+    auth-server-url: https://keycloak.bookanapp.org/realms/BAA
   rest-client:
     multibanco-client:
       uri: https://ifthenpay.com/api/multibanco/reference/init
     mbway-client:
       uri: https://mbway.ifthenpay.com/ifthenpaymbw.asmx
+    keycloak-client:
+      uri: https://keycloak.bookanapp.org/realms/BAA/protocol/openid-connect/token
   resteasy-reactive:
     path: /api/v1
   datasource:
@@ -42,9 +48,9 @@ quarkus:
      itp-credit-card-client:
        uri: https://ifthenpay.com/api/creditcard/init/AAA-000000
      keycloak-client:
-       uri: http://localhost:9090/realms/BAA/protocol/openid-connect/token
+       uri: https://keycloak.bookanapp.org/realms/BAA/protocol/openid-connect/token
     oidc:
-      auth-server-url: http://localhost:9090/realms/BAA
+      auth-server-url: https://keycloak.bookanapp.org/realms/BAA
       tls:
         verification: none
 "%test":
@@ -53,7 +59,7 @@ quarkus:
     mbway-key: QYZ-455570
   quarkus:
     oidc:
-      auth-server-url: http://localhost:9090/realms/BAA
+      auth-server-url: https://keycloak.bookanapp.org/realms/BAA
       tls:
         verification: none
     log:
@@ -72,7 +78,7 @@ quarkus:
       itp-credit-card-client:
         uri: https://ifthenpay.com/api/creditcard/init/AAA-000000
       keycloak-client:
-        uri: http://localhost:9090/realms/BAA/protocol/openid-connect/token
+        uri: https://keycloak.bookanapp.org/realms/BAA/protocol/openid-connect/token
     datasource:
       db-kind: h2
       username: sa

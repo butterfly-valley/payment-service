@@ -30,21 +30,27 @@ public class IfThenPayResource {
     @POST
     @Path("/multibanco/request")
     public Response requestMultibancoReference(AppointmentPaymentRequest request) {
-        var providerId = this.authService.returnProviderIdFromClaims(context);
+        var providerId = request.getProviderId();
+        if (providerId == null)
+        providerId = this.authService.returnProviderIdFromClaims(context);
         return this.ifThenPayResourceService.requestMultibancoReference(providerId, request);
     }
 
     @POST
     @Path("/mbway/request")
     public Response requestMbWayPayment(AppointmentPaymentRequest request) {
-        var providerId = this.authService.returnProviderIdFromClaims(context);
+        var providerId = request.getProviderId();
+        if (providerId == null)
+            providerId = this.authService.returnProviderIdFromClaims(context);
         return this.ifThenPayResourceService.requestMbWayPayment(providerId, request);
     }
 
     @POST
     @Path("/cc/request")
     public Response requestCreditCardPayment(AppointmentPaymentRequest request) {
-        var providerId = this.authService.returnProviderIdFromClaims(context);
+        var providerId = request.getProviderId();
+        if (providerId == null)
+            providerId = this.authService.returnProviderIdFromClaims(context);
         return this.ifThenPayResourceService.requestCreditCardPayment(providerId, request);
     }
 
