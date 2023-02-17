@@ -6,6 +6,8 @@ quarkus:
   oidc:
     auth-server-url: https://keycloak.bookanapp.org/realms/BAA
   rest-client:
+    itp-credit-card-client:
+      uri: https://ifthenpay.com/api/creditcard/init/AAA-000000
     multibanco-client:
       uri: https://ifthenpay.com/api/multibanco/reference/init
     mbway-client:
